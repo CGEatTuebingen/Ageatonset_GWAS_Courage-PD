@@ -157,23 +157,78 @@ head(sumstat)
 hrc_data <- fread("hrc_annotations.txt")
 # hrc_annotations.txt was obtained from HRC which contains SNP rsids and corresponding positions
 hrc_data <- hrc_data %>% select(MarkerName, SNP)
-sumstat_snpid <- left_join(sumstat, hrc_data); rm(sumstat)
-sumstat_snpid   <- sumstat_snpid %>% rename(P = `P-value`)
-sumstat_snpid   <- sumstat_snpid  %>% separate("MarkerName", c("CHR", "BP"), ":")
-
-### Remove bad quality SNP
-sumstat_snpid <- sumstat_snpid %>% filter(HetDf>18 & HetISq<=50)
-
-# In a similar fashion, stratified meta-analysis was conducted on the basis of gender and ethnicity 
-
-# All the summary statitistics files for courage cohorts will be available on request 
-# Grover2022_courage_aao_sumstat.txt
-# Grover2022_courage_aao_caucasian_sumstat.txt
-# Grover2022_courage_aao_asian_sumstat.txt
-# Grover2022_courage_aao_males_sumstat.txt
-# Grover2022_courage_aao_females_sumstat.txt
+head(hrc_data)
+# MarkerName         SNP
+# 1:    1:13380 rs571093408
+# 2:    1:16071 rs541172944
+# 3:    1:16141 rs529651976
+# 4:    1:16280 1_16280_C_T
+# 5:    1:49298 rs200943160
+# 6:    1:54353 rs140052487
 
 
+sumstat_snpid <- left_join(sumstat, hrc_data)
+rm(sumstat)
+sumstat_snpid   <-
+  sumstat_snpid  %>% separate("MarkerName", c("CHR", "BP"), ":")
+
+### Remove bad quality SNP to get the annotated and cleaned meta-analysis output file
+courage_aao_sumdata <-
+  sumstat_snpid %>% filter(HetDf > 18 &
+                             HetISq <= 50) %>%  rename(
+                               ea = Allele1,
+                               oa = Allele2,
+                               se = StdErr,
+                               beta = Effect,
+                               p = "P-value",
+                               eaf = Freq1,
+                               chr = CHR,
+                               pos = BP,
+                               snp = SNP
+                             ) %>% select(snp, chr, pos, ea, oa, eaf, beta, se, p) %>% mutate(ea = toupper(ea), oa = toupper(oa)) %>% write.table("Grover2022_courage_aao_sumstat.txt",
+                                                                                                                                                  row.names = F,
+                                                                                                                                                  quote = FALSE)
+head(courage_aao_sumdata)                                                                                                                                                                                                                                                                                                     quote = FALSE)
+# snp chr       pos ea oa    eaf    beta     se      p
+# 1: rs113534962   5  85928892  T  C 0.0660  0.1941 0.3442 0.5727
+# 2: rs559397866   2 170966953  T  C 0.9890 -1.7573 1.0077 0.0812
+# 3:   rs2366866  10 128341232  T  C 0.4506  0.2504 0.1687 0.1377
+# 4:  rs79253331   1 209652100  T  C 0.9939  1.4123 1.2772 0.2688
+# 5:  rs62099898  18  51112281  T  C 0.7153 -0.1264 0.1857 0.4961
+# 6:  rs11725240   4  55643311  T  C 0.1755  0.3328 0.2256 0.1402
+
+str(courage_aao_sumdata)
+# Classes 'data.table' and 'data.frame':  6565615 obs. of  9 variables:
+#   $ snp : chr  "rs113534962" "rs559397866" "rs2366866" "rs79253331" ...
+# $ chr : chr  "5" "2" "10" "1" ...
+# $ pos : chr  "85928892" "170966953" "128341232" "209652100" ...
+# $ ea  : chr  "T" "T" "T" "T" ...
+# $ oa  : chr  "C" "C" "C" "C" ...
+# $ eaf : num  0.066 0.989 0.451 0.994 0.715 ...
+# $ beta: num  0.194 -1.757 0.25 1.412 -0.126 ...
+# $ se  : num  0.344 1.008 0.169 1.277 0.186 ...
+# $ p   : num  0.5727 0.0812 0.1377 0.2688 0.4961 ...
+# - attr(*, ".internal.selfref")=<externalptr>
+  
+
+## Key of the output file
+# snp - this is the marker name
+# chr - chromosomal location of the marker
+# pos - position of the marker on the chromosome
+# ea - effect allele 
+# oa - other allele
+# eaf - weighted average of frequency for effect allele across all studies
+# beta - overall estimated effect size for effect allele
+# se - overall standard error for effect size estimate
+# p - meta-analysis p-value
+
+
+## In a similar fashion, stratified meta-analysis (based on gender and ethnicity) and combined meta-analysis with publicly available ipdgc dataset were conducted 
+
+## The summary statitistics files for the complete courage cohort (main and the key file) will be available on request as zipped files(.rar)
+# Grover2022_courage_aao_sumstat.txt and cleaned_readme.txt zipped as Grover2022_courage_aao_sumstat.rar (134 MB) 
+
+     
 
 
 
