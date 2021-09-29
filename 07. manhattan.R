@@ -6,8 +6,9 @@ library(data.table)
 library("reshape2")
 library("ggrepel")
 
-## B. Provide metanalysis output file as input
+## B. Provide meta-nalysis output file as input
 sumstat <- fread("consoritum_metal_output.tbl")
+# Example of meta-analysis output file = "meta_analysis_courage_05052021.tbl" (See 04. Linear regression.R)
 
 ## C. Annotation of the file with SNP names using HRC dataset
 hrc_data <- fread("hrc_annotations.txt")
