@@ -1,19 +1,17 @@
-# Generate Locuszoom input file
-## Filter chromosome 4 SNPs
-metanalysis_consortium_chr4 <-
-  fread("consortium_summarystatistics.txt") %>% mutate(MarkerName = str_sub(MarkerName, 4)) %>% separate(MarkerName, into = c("CHR", "POS"), sep = ":") %>%
-  rename(
-    EA = REF,
-    OA = ALT,
-    beta = EFFECT,
-    se = SE,
-    Isq = HetISq
-  ) %>%
-  mutate(CHR = as.numeric(CHR)) %>%
-  filter(CHR == "4")
+## Generate Locuszoom input file
+### Filter chromosome 4 SNPs
+metanalysis_courage_chr4 <-
+  fread("meta_analysis_courage_05052021.tbl") %>% separate(MarkerName, into = c("CHR", "POS"), sep = ":") %>% filter(HetDf >
+                                                                                                                      18) %>% filter(HetISq < 50) %>% rename(
+                                                                                                                        EA = Allele1,
+                                                                                                                        OA = Allele2,
+                                                                                                                        beta = Effect,
+                                                                                                                        se = StdErr,
+                                                                                                                        Isq = HetISq
+                                                                                                                      ) %>% mutate(CHR = as.numeric(CHR)) %>% filter(CHR == "4")
 
 
-## Filter SNPs on 2kb on either side of the specific loci e.g. BST1 loci and create output file specific to locuszoom 
+### Filter SNPs on 2kb on either side of the specific loci e.g. BST1 loci and create output file specific to locuszoom 
 metanalysis_consortium_chr4_2kb_BST1 <-
   metanalysis_consortium_chr4 %>% mutate(POS = as.numeric(POS)) %>%
   filter(POS %in% c(15537348:15937348)) %>% mutate(SNP = paste(CHR, POS, sep =
@@ -32,14 +30,29 @@ metanalysis_consortium_chr4_2kb_BST1  %>%  select(c(SNP, "P-value")) %>%  rename
     quote = FALSE
   )
 
+## Header of the input file for locuszoom plot                                                                                                                      ) %>% mutate(CHR = as.numeric(CHR)) %>% filter(CHR == "4")
+# MarkerName	P.value
+# chr4:15840444	0.05687
+# chr4:15697925	0.2247
+# chr4:15704663	0.3483
+# chr4:15733454	0.04854
+# chr4:15734652	0.04854
+# chr4:15681719	0.7246
+# chr4:15823964	0.06463
+# chr4:15707001	0.211
+# chr4:15647537	0.6079
+# chr4:15728806	0.05818
+# chr4:15728079	0.02503
+# chr4:15765183	0.08403
+# chr4:15811762	0.8286
+# chr4:15715877	0.5744
+# chr4:15837382	0.6321
 
-# Go to http://locuszoom.org/genform.php?type=yourdata
+
+### Go to http://locuszoom.org/genform.php?type=yourdata
 # Upload txt file to Path to your file
 # Give the name of SNP of interest e.g. chr4:15737348 in the section specific region to display along with a flanking size of 200kb
 # Click on plot data 
 # A pdf is generated. Use edit feature in pdf to rename the loci names with SNPids.
 # Extract images from pdf as TIF file
-
-
-
 
