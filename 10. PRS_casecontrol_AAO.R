@@ -1,54 +1,150 @@
 # PRS SNP extraction from case control analysis
-## A. Load relevant libraries
+## Load top hits from case control analysis (On R platform)
+# A. Load relevant libraries
 library(tidyverse)
 library(data.table)
 library(readxl)
-
-## Load top hits from case control analysis
 df <- read_excel("courage+ipdgc_010721.xlsx")
+str(df)
+# tibble [59 x 12] (S3: tbl_df/tbl/data.frame)
+# $ Sl.No                                   : num [1:59] 1 2 3 5 6 7 8 9 10 11 ...
+# $ MarkerName                              : chr [1:59] "rs35603727" "rs12118655" "rs35749011" "rs11264304" ...
+# $ CHR:BP                                  : chr [1:59] "1:156007988:G:A" "1:205663478:A:G" "1:155135036:G:A" "1:155033317:T:C" ...
+# $ Gene                                    : chr [1:59] "UBQLN4" "SLC45A3" "TRIM46" "ADAM15" ...
+# $ Allele1                                 : chr [1:59] "A" "A" "A" "T" ...
+# $ Allele2                                 : chr [1:59] "G" "G" "G" "C" ...
+# $ Effect                                  : num [1:59] 0.5232 -0.125 0.7117 0.0981 1.1782 ...
+# $ StdErr                                  : num [1:59] 0.0558 0.0195 0.0586 0.015 0.1571 ...
+# $ P-value of Courage + IPDGC meta-analysis: num [1:59] 6.65e-21 1.63e-10 5.48e-34 5.48e-11 6.40e-14 ...
+# $ HetISq                                  : num [1:59] 0 45 40.1 0 0 0 0 0 0 0 ...
+# $ HetDf                                   : num [1:59] 1 1 1 1 0 1 1 1 1 1 ...
+# $ HetPVal                                 : num [1:59] 0.563 0.178 0.196 0.78 1 ..
+
+## B. Filter the original file from COURAGE GWAS genotype data (n=8535 samples) to create ped and map for the top 59 SNPs (n=8535 samples) (On linux terminal)
+# extract SNPdata (where snplist.txt corresponds to CHR:BP column of df dataframe above
+# mergedageatonset_pooled is the genotype data obtained from COURAGE GWAS on 8535 PD patients with AAO data
 mergedageatonset_bim <- fread("mergedageatonset_pooled.bim")
+str(mergedageatonset_bim)
+# Classes ‘data.table’ and 'data.frame':	23881835 obs. of  6 variables:
+#   $ V1: int  1 1 1 1 1 1 1 1 1 1 ...
+# $ V2: chr  "1:88362:G:A" "1:565658:T:C" "1:569294:A:G" "1:604070:G:A" ...
+# $ V3: int  0 0 0 0 0 0 0 0 0 0 ...
+# $ V4: int  88362 565658 569294 604070 636673 701747 705881 706233 712228 713189 ...
+# $ V5: chr  "G" "T" "A" "G" ...
+# $ V6: chr  "A" "C" "G" "A" ...
+# - attr(*, ".internal.selfref")=<externalptr>
 
 write.table(prs_bim, "snpforprs.bim", row.names = F, quote = F, sep = "\t")
-
 patterns <- paste0("^", df$`CHR:BP`)
 result <- filter(mergedageatonset_bim, grepl(paste(patterns, collapse="|"), mergedageatonset_bim$V2))
+# > str(result)
+# Classes ‘data.table’ and 'data.frame':	59 obs. of  6 variables:
+#   $ V1: int  1 1 1 1 1 1 2 2 3 3 ...
+# $ V2: chr  "1:152192927:C:G" "1:155033317:T:C" "1:155135036:G:A" "1:156007988:G:A" ...
+# $ V3: int  0 0 0 0 0 0 0 0 0 0 ...
+# $ V4: int  152192927 155033317 155135036 156007988 205663478 205744546 135537119 169110394 18199602 28705690 ...
+# $ V5: chr  "C" "T" "G" "G" ...
+# $ V6: chr  "G" "C" "A" "A" ...
+# - attr(*, ".internal.selfref")=<externalptr>
 write.table(result$V2, "snplist.txt", col.names = F, row.names = F, quote = F)
-
-
-filter(mergedageatonset_bim, grepl("^1:88362", mergedageatonset_bim$V2))
-
-plink --bfile mergedageatonset_pooled --extract snplist.txt  --recode --out snpforprs
-prs_ped <- fread("snpforprs.ped")
-prs_map <- fread("snpforprs.map")
-## Merge alleles into genotypes for each SNP
-prs_ped <- prs_ped %>% unite("1:152192927",  V7:V8, sep = "",  remove = T)
-write.csv(prs_ped, "prs_input_aao.csv")
-
-prs_ped <- prs_ped %>% rename(FID = V1)
-prs_input_cov <- left_join(clinical_cases_sporadic_pcs, prs_ped)
-prs_input_cov <- prs_input_cov %>% rename(SEX = gender) %>% select(FID, IID, SEX, PC1:PC5) %>% write.table("prs_cov_aao.txt", row.names = F, quote = F, sep = "\t")
-prs_input_cov <- left_join(clinical_cases_sporadic_pcs, prs_ped)
-
-prs_input_cov <-  prs_input_cov %>% rename(PHENOTYPE = age_onset) %>% select(FID, IID, PHENOTYPE) %>% write.table("prs_pheno_aao.txt", row.names = F, quote = F, sep = "\t")
-df <- read_excel("courage+ipdgc_010721.xlsx")
-
-df <- df %>% rename(snp = MarkerName, A1 = Allele1, A2= Allele2, beta = Effect, pvalue = 'P-value of Courage + IPDGC meta-analysis') %>% separate('CHR:BP', into = c("chr", "pos"), sep = ":")
-df <- df %>% select(snp, chr, pos, A1, A2, beta, pvalue)
-write.table(df, "prs_base_ipdgc_courage.assoc", row.names = F, quote = F, sep = "\t")
-prs_ped <- fread("snpforprs.ped")
-prs_ped %>% 
-  prs_bim <- fread("snpforprs.bim")
-prs_bim$V2 <- str_sub(prs_bim$V2, end=-5)
-write.table(prs_bim, "snpforprs.bim", row.names = F, quote = F, sep = "\t")
-
-
-# extract SNPdata
+head snplist.txt
+# 1:152192927:C:G
+# 1:155033317:T:C
+# 1:155135036:G:A
+# 1:156007988:G:A
+# 1:205663478:A:G
+# 1:205744546:C:A
 plink --bfile mergedageatonset_pooled --extract snplist.txt --make-bed --out snpforprs
+
+head updatersid.txt
+# 1:156007988:G:A	rs35603727
+# 1:205663478:A:G	rs12118655
+# 1:155135036:G:A	rs35749011
+# 1:155033317:T:C	rs11264304
+# 1:152192927:C:G	rs147288664
+# 1:205744546:C:A	rs823144
+# 2:169110394:C:T	rs1474055
+# 2:135537119:T:G	rs6741007
+
 #update rsid
 plink --bfile snpforprs --update-name updatersid.txt --make-bed --out snpforprs
 
 
-setwd("D:/courage_data/data/metanalysis_05_05_2021")
+## C. Generate input covariate file from COURAGE AAO GWAS 
+# using plink on linux terminal
+plink --bfile mergedageatonset_pooled --extract snplist.txt  --recode --out snpforprs
+# on R Platform
+prs_ped <- fread("snpforprs.ped")
+prs_map <- fread("snpforprs.map")
+str(prs_map)
+# Classes ‘data.table’ and 'data.frame':	62 obs. of  4 variables:
+#   $ V1: int  1 1 1 1 1 1 2 2 3 3 ...
+# $ V2: chr  "1:152192927:C:G" "1:155033317:T:C" "1:155135036:G:A" "1:156007988:G:A" ...
+# $ V3: int  0 0 0 0 0 0 0 0 0 0 ...
+# $ V4: int  152192927 155033317 155135036 156007988 205663478 205744546 135537119 169110394 18199602 28705690 ...
+# - attr(*, ".internal.selfref")=<externalptr> 
+  > 
+str(prs_ped)
+# Classes ‘data.table’ and 'data.frame':	8535 obs. of  130 variables:
+#   $ V1  : chr  "10008284-ND-VAR-BLD-DNA-01_10008284-ND-VAR-BLD-DNA-01" "10008285-ND-VAR-BLD-DNA-01_10008285-ND-VAR-BLD-DNA-01" "10008289-ND-VAR-BLD-DNA-01_10008289-ND-VAR-BLD-DNA-01" "10008551-ND-VAR-BLD-DNA-01_10008551-ND-VAR-BLD-DNA-01" ...
+# $ V2  : chr  "10008284-ND-VAR-BLD-DNA-01_10008284-ND-VAR-BLD-DNA-01" "10008285-ND-VAR-BLD-DNA-01_10008285-ND-VAR-BLD-DNA-01" "10008289-ND-VAR-BLD-DNA-01_10008289-ND-VAR-BLD-DNA-01" "10008551-ND-VAR-BLD-DNA-01_10008551-ND-VAR-BLD-DNA-01" ...
+# $ V3  : int  0 0 0 0 0 0 0 0 0 0 ...
+# $ V4  : int  0 0 0 0 0 0 0 0 0 0 ...
+# $ V5  : int  1 1 1 1 2 1 1 1 2 2 ...
+# $ V6  : int  2 2 2 2 2 2 2 2 2 2 ...
+# $ V7  : chr  "0" "0" "0" "0" ...
+# $ V8  : chr  "0" "0" "0" "0" ...
+# $ V9  : chr  "C" "T" "T" "T" ...
+# $ V10 : chr  "C" "C" "T" "C" ...
+# $ V11 : chr  "G" "G" "G" "G" ...
+# $ V12 : chr  "G" "G" "G" "G" ...
+# $ V13 : chr  "G" "G" "G" "G" ...
+# $ V14 : chr  "G" "G" "G" "G" ...
+# $ V15 : chr  "G" "G" "G" "A" ...
+# $ V16 : chr  "A" "A" "A" "A" ...
+# $ V17 : chr  "A" "A" "C" "A" ..
+prs_ped <- prs_ped %>% rename(FID = V1)
+prs_input_cov <- left_join(clinical_cases_sporadic_pcs, prs_ped)
+prs_input_cov <- prs_input_cov %>% rename(SEX = gender) %>% select(FID, IID, SEX, PC1:PC5) %>% write.table("prs_cov_aao.txt", row.names = F, quote = F, sep = "\t")
+str(fread("prs_cov_aao.txt"))
+# Classes ‘data.table’ and 'data.frame':	8535 obs. of  8 variables:
+#   $ FID: chr  "10008284-ND-VAR-BLD-DNA-01_10008284-ND-VAR-BLD-DNA-01" "10008285-ND-VAR-BLD-DNA-01_10008285-ND-VAR-BLD-DNA-01" "10008289-ND-VAR-BLD-DNA-01_10008289-ND-VAR-BLD-DNA-01" "10008551-ND-VAR-BLD-DNA-01_10008551-ND-VAR-BLD-DNA-01" ...
+# $ IID: chr  "10008284-ND-VAR-BLD-DNA-01_10008284-ND-VAR-BLD-DNA-01" "10008285-ND-VAR-BLD-DNA-01_10008285-ND-VAR-BLD-DNA-01" "10008289-ND-VAR-BLD-DNA-01_10008289-ND-VAR-BLD-DNA-01" "10008551-ND-VAR-BLD-DNA-01_10008551-ND-VAR-BLD-DNA-01" ...
+# $ SEX: int  1 1 1 1 2 1 1 1 2 2 ...
+# $ PC1: num  -0.02534 0.00644 -0.0388 0.00279 0.00552 ...
+# $ PC2: num  -0.00208 0.01493 0.00483 -0.01395 -0.0289 ...
+# $ PC3: num  -0.01322 -0.00595 0.01041 -0.00336 -0.00881 ...
+# $ PC4: num  -0.00322 -0.00905 0.0137 -0.00701 0.01026 ...
+# $ PC5: num  0.00172 -0.01125 -0.00607 0.00294 0.00383 ...
+# - attr(*, ".internal.selfref")=<externalptr> 
+
+## Generate input phenotypic file from COURAGE AAO GWAS (on R Platform)
+prs_input_cov <- left_join(clinical_cases_sporadic_pcs, prs_ped)
+prs_input_cov <-  prs_input_cov %>% rename(PHENOTYPE = age_onset) %>% select(FID, IID, PHENOTYPE) %>% write.table("prs_pheno_aao.txt", row.names = F, quote = F, sep = "\t")
+str(fread("prs_pheno_aao.txt")
+# Classes ‘data.table’ and 'data.frame':	8535 obs. of  3 variables:
+#   $ FID      : chr  "10008284-ND-VAR-BLD-DNA-01_10008284-ND-VAR-BLD-DNA-01" "10008285-ND-VAR-BLD-DNA-01_10008285-ND-VAR-BLD-DNA-01" "10008289-ND-VAR-BLD-DNA-01_10008289-ND-VAR-BLD-DNA-01" "10008551-ND-VAR-BLD-DNA-01_10008551-ND-VAR-BLD-DNA-01" ...
+# $ IID      : chr  "10008284-ND-VAR-BLD-DNA-01_10008284-ND-VAR-BLD-DNA-01" "10008285-ND-VAR-BLD-DNA-01_10008285-ND-VAR-BLD-DNA-01" "10008289-ND-VAR-BLD-DNA-01_10008289-ND-VAR-BLD-DNA-01" "10008551-ND-VAR-BLD-DNA-01_10008551-ND-VAR-BLD-DNA-01" ...
+# $ PHENOTYPE: num  63 70 64 35 73 52 71 66 46 66 ...
+# - attr(*, ".internal.selfref")=<externalptr>
+
+## Generate input assoc file from meta-analysis of courage and ipdgc PD summary data (on R Platform)
+df <- read_excel("courage+ipdgc_010721.xlsx")
+df <- df %>% rename(snp = MarkerName, A1 = Allele1, A2= Allele2, beta = Effect, pvalue = 'P-value of Courage + IPDGC meta-analysis') %>% separate('CHR:BP', into = c("chr", "pos"), sep = ":")
+df <- df %>% select(snp, chr, pos, A1, A2, beta, pvalue)
+write.table(df, "prs_base_ipdgc_courage.assoc", row.names = F, quote = F, sep = "\t")
+str(fread("prs_base_ipdgc_courage.assoc"))
+# Classes ‘data.table’ and 'data.frame':	59 obs. of  7 variables:
+# $ snp   : chr  "rs35603727" "rs12118655" "rs35749011" "rs11264304" ...
+# $ chr   : int  1 1 1 1 1 1 2 2 3 3 ...
+# $ pos   : int  156007988 205663478 155135036 155033317 152192927 205744546 169110394 135537119 18199602 182760073 ...
+# $ A1    : chr  "A" "A" "A" "T" ...
+# $ A2    : chr  "G" "G" "G" "C" ...
+# $ beta  : num  0.5232 -0.125 0.7117 0.0981 1.1782 ...
+# $ pvalue: num  6.65e-21 1.63e-10 5.48e-34 5.48e-11 6.40e-14 ...
+# - attr(*, ".internal.selfref")=<externalptr> 
+    
+## Run PRSice analysis (on linux terminal(
 Rscript PRSice.R --dir . \
 --prsice ./PRSice_linux \
 --base prs_base_ipdgc_courage.assoc \
@@ -66,5 +162,23 @@ Rscript PRSice.R --dir . \
 --perm 10000 \
 --cov-factor SEX \
 
-
+## On R platform
 prsice_data <- fread("PRSice.summary")
+> str(prsice_data)
+# Classes ‘data.table’ and 'data.frame':	1 obs. of  12 variables:
+#   $ Phenotype     : chr "-"
+# $ Set           : chr "Base"
+# $ Threshold     : num 5e-08
+# $ PRS.R2        : num 0.00178
+# $ Full.R2       : num 0.00589
+# $ Null.R2       : num 0.00411
+# $ Prevalence    : chr "-"
+# $ Coefficient   : num -0.581
+# $ Standard.Error: num 0.149
+# $ P             : num 9.36e-05
+# $ Num_SNP       : int 40
+# $ Empirical-P   : num 1e-04
+# - attr(*, ".internal.selfref")=<externalptr> 
+
+    
+
