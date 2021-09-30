@@ -89,7 +89,7 @@ count_sites <- as.data.frame(count(clinical_cases_sporadic, study_recoded)) %>% 
 view(count_sites)
 
 ## J. Added a column for ethnicity and summarize AAO by different genders and ethnic groups
-clinical_cases_sporadic <- clinical_cases_sporadic %>% mutate(ethnicity = if_else(study_recoded == "hattori"|study_recoded == "kim"|study_recoded == "matsuo"|study_recoded == "chung", "Asian", "Caucasian"))
+clinical_cases_sporadic <- clinical_cases_sporadic %>% mutate(ethnicity = if_else(study_recoded == "asianstudy1"|study_recoded == "asianstudy2"|study_recoded == "asianstudy3", "Asian", "Caucasian"))
 table(clinical_cases_sporadic$ethnicity)
 clinical_cases_sporadic %>% group_by(ethnicity) %>% summarise(mean = mean(age_onset), sd = sd(age_onset))
 clinical_cases_sporadic %>% group_by(gender) %>% summarise(mean = mean(age_onset), sd = sd(age_onset))
