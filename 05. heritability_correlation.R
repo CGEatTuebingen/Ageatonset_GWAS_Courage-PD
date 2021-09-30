@@ -50,13 +50,13 @@ head(fread("consortiumA_sumstat_ldsc_input.txt"))
 ### Similarly generate ldsc input for other consortium using metal ouput from COURAGE PD GWAS or IPDGC AAO GWAS
 
 ## C. Generate h2 for different datasets; On terminal; Tool: LDSC; N: Sample size
-munge_sumstats.py--sumstats consortiumA_sumstat_ldsc_input.txt--N XXXX--merge -
+munge_sumstats.py--sumstats consortiumA_sumstat_ldsc_input.txt--N 16443--merge -
   alleles eur_w_ld_chr / w_hm3.snplist--chunksize 500000--out consortiumA_sumstat_ldsc_input
 ldsc.py--h2 consortiumA_sumstat_ldsc_input.sumstats.gz--ref - ld - chr eur_w_ld_chr / --w -
   ld - chr eur_w_ld_chr / --out consortiumA_sumstat_h2
 
 
-munge_sumstats.py--sumstats consortiumB_sumstat_ldsc_input.txt--N YYYY--merge -
+munge_sumstats.py--sumstats consortiumB_sumstat_ldsc_input.txt--N 14919 --merge -
   alleles eur_w_ld_chr / w_hm3.snplist--chunksize 500000--out consortiumB_sumstat_ldsc_input
 ldsc.py--h2 consortiumB_sumstat_ldsc_input.sumstats.gz--ref - ld - chr eur_w_ld_chr / --w -
   ld - chr eur_w_ld_chr / --out consortiumB_sumstat_h2
@@ -79,18 +79,53 @@ ldsc.py--h2 consortiumB_sumstat_ldsc_input.sumstats.gz--ref - ld - chr eur_w_ld_
 # Ratio: NA (mean chi^2 < 1)
 
 ## D. Generate correlation between different datasets
-ldsc.py--rg consortiumA_sumstat_ldsc_input.sumstats.gz, consortiumB_sumstat_ldsc_input.sumstats.gz--ref -
+ldsc.py--rg consortiumA_sumstat_ldsc_input.sumstats.gz, consortiumB_sumstat_ldsc_input.sumstats.gz --ref -
   ld - chr eur_w_ld_chr / --w - ld - chr eur_w_ld_chr / --out  correaltion_bip
 
 ### Sample output of correlation between different datasets
-# Genetic Covariance
-# ------------------
-# Total Observed scale gencov: -0.0674 (0.0332)
-# Mean z1*z2: -0.0179
-# Intercept: 0.0034 (0.0079)
-#
-# Genetic Correlation
-# -------------------
-# Genetic Correlation: -0.5337 (0.4773)
-# Z-score: -1.1181
-# P: 0.2635
+  # Reading summary statistics from consortiumA_sumstat_ldsc_input.sumstats.gz ...
+ # Read summary statistics for 1061219 SNPs.
+ # Reading reference panel LD Score from eur_w_ld_chr/[1-22] ... (ldscore_fromlist)
+ # Read reference panel LD Scores for 1290028 SNPs.
+ # Removing partitioned LD Scores with zero variance.
+ # Reading regression weight LD Score from eur_w_ld_chr/[1-22] ... (ldscore_fromlist)
+ # Read regression weight LD Scores for 1290028 SNPs.
+ # After merging with reference panel LD, 1048041 SNPs remain.
+ # After merging with regression SNP LD, 1048041 SNPs remain.
+ # Computing rg for phenotype 2/2
+ # Reading summary statistics from consortiumB_sumstat_ldsc_input.sumstats.gz ...
+ # Read summary statistics for 1217311 SNPs.
+ # After merging with summary statistics, 1048041 SNPs remain.
+ # 1047234 SNPs with valid alleles.
+ # 
+ # Heritability of phenotype 1
+ # ---------------------------
+ #   Total Observed scale h2: 0.0833 (0.0577)
+ # Lambda GC: 0.9927
+ # Mean Chi^2: 0.9885
+ # Intercept: 0.9737 (0.0072)
+ # Ratio: NA (mean chi^2 < 1)
+ # 
+ # Heritability of phenotype 2/2
+ # -----------------------------
+ #   Total Observed scale h2: 0.2914 (0.041)
+ # Lambda GC: 1.0315
+ # Mean Chi^2: 1.0489
+ # Intercept: 0.9485 (0.0082)
+ # Ratio < 0 (usually indicates GC correction).
+ # 
+ # Genetic Covariance
+ # ------------------
+ #   Total Observed scale gencov: -0.0462 (0.0304)
+ # Mean z1*z2: -0.011
+ # Intercept: 0.0008 (0.0052)
+ # 
+ # Genetic Correlation
+ # -------------------
+ #   Genetic Correlation: -0.2964 (0.2245)
+ # Z-score: -1.3204
+ # P: 0.1867
+ # 
+ # Summary of Genetic Correlation Results
+ # p1                                    p2      rg      se       z       p  h2_obs  h2_obs_se  h2_int  h2_int_se  gcov_int  gcov_int_se
+ # consortiumA_sumstat_ldsc_input.sumstats.gz  consortiumB_sumstat_ldsc_input.sumstats.gz -0.2964  0.2245 -1.3204  0.1867  0.2914      0.041  0.9485     0.0082    0.0008       0.0052
