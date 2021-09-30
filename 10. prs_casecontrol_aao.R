@@ -1,6 +1,6 @@
 # PRS SNP extraction from case control analysis
-## Load top hits from case control analysis (On R platform)
-# A. Load relevant libraries
+## A. Load top hits from case control analysis (On R platform)
+### Load relevant libraries
 library(tidyverse)
 library(data.table)
 library(readxl)
@@ -118,7 +118,7 @@ str(fread("prs_cov_aao.txt"))
 # $ PC5: num  0.00172 -0.01125 -0.00607 0.00294 0.00383 ...
 # - attr(*, ".internal.selfref")=<externalptr> 
 
-## Generate input phenotypic file from COURAGE AAO GWAS (on R Platform)
+## D. Generate input phenotypic file from COURAGE AAO GWAS (on R Platform)
 prs_input_cov <- left_join(clinical_cases_sporadic_pcs, prs_ped)
 prs_input_cov <-  prs_input_cov %>% rename(PHENOTYPE = age_onset) %>% select(FID, IID, PHENOTYPE) %>% write.table("prs_pheno_aao.txt", row.names = F, quote = F, sep = "\t")
 str(fread("prs_pheno_aao.txt")
@@ -128,7 +128,7 @@ str(fread("prs_pheno_aao.txt")
 # $ PHENOTYPE: num  63 70 64 35 73 52 71 66 46 66 ...
 # - attr(*, ".internal.selfref")=<externalptr>
 
-## Generate input assoc file from meta-analysis of courage and ipdgc PD summary data (on R Platform)
+## E. Generate input assoc file from meta-analysis of courage and ipdgc PD summary data (on R Platform)
 df <- read_excel("courage+ipdgc_010721.xlsx")
 df <- df %>% rename(snp = MarkerName, A1 = Allele1, A2= Allele2, beta = Effect, pvalue = 'P-value of Courage + IPDGC meta-analysis') %>% separate('CHR:BP', into = c("chr", "pos"), sep = ":")
 df <- df %>% select(snp, chr, pos, A1, A2, beta, pvalue)
@@ -144,7 +144,7 @@ str(fread("prs_base_ipdgc_courage.assoc"))
 # $ pvalue: num  6.65e-21 1.63e-10 5.48e-34 5.48e-11 6.40e-14 ...
 # - attr(*, ".internal.selfref")=<externalptr> 
     
-## Run PRSice analysis (on linux terminal(
+## F. Run PRSice analysis (on linux terminal(
 Rscript PRSice.R --dir . \
 --prsice ./PRSice_linux \
 --base prs_base_ipdgc_courage.assoc \
