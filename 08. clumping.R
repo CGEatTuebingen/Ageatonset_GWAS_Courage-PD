@@ -1,5 +1,9 @@
 # Clumping
-### Create chromosome specific input file for running clumping in Plink (R platform)
+## A. Load relevant libraries
+library(tidyverse)
+library(data.table)
+
+## B. Create chromosome specific input file for running clumping in Plink (R platform)
 sumstat <- fread("meta_analysis_courage_05052021.tbl")
 sumstat_snpid <- left_join(sumstat, hrc_data); rm(sumstat)
 sumstat_snpid  <- sumstat_snpid %>% rename(P = `P-value`)
@@ -17,7 +21,7 @@ for (i in 1:length(uniq)){
   write.table(data_1, myfile,row.names=FALSE,sep="\t", quote = FALSE) 
 }
 
-## Content of the sample input file "clump_input19df_mychr_5_courage_all.txt"
+### Content of the sample input file "clump_input19df_mychr_5_courage_all.txt"
 # CHR	SNP	BP	A1	SE	P
 # 5	rs1155605	102799858	T	0.294	9.777e-07
 # 5	rs983119	102761802	A	0.2916	6.905e-06
@@ -39,17 +43,17 @@ for (i in 1:length(uniq)){
 # 5	rs1864084	102791137	A	0.2949	3.098e-06
 
 
-###  Run for each chromosome on Plink platform
+## C.  Run for each chromosome on Plink platform
 plink --bfile ./HRC_ld/chr1 --clump clump_input19df_mychr_5_courage_all.txt --clump-field P --clump-kb 250 --clump-p1 1 --clump-r2 0.1 --clump-snp-field SNP --memory 120000 --out chr1_clump_courage19df_all 
 
-### Merge all the chromosome specific output files on R platform
+## D. Merge all the chromosome specific output files on R platform
 masterlist =list.files(pattern = "19df_all\\.clumped$")
 l <- lapply(masterlist, fread)
 dt <- rbindlist(l)
 dt <- dt %>% select(CHR,SNP, BP, P, SP2) %>%  mutate(SP2 = gsub("\\(1\\)", "", SP2))
 write.csv(dt, "courage_clumping19df_all_results.csv")
 
-## Content of the sample output file "courage_clumping19df_all_results.csv"
+### Content of the sample output file "courage_clumping19df_all_results.csv"
 # CHR	SNP	BP	P	SP2
 # 1	1	rs116768866	30030233	8.08E-06	NONE
 # 2	10	rs113744107	63326120	4.68E-06	rs111364217
