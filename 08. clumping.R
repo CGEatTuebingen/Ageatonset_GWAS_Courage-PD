@@ -4,6 +4,7 @@ library(tidyverse)
 library(data.table)
 
 ## B. Create chromosome specific input file for running clumping in Plink (R platform)
+### Use the meta-analysis output generated in 04.linear_regression step (meta_analysis_courage_05052021.tbl)
 sumstat <- fread("meta_analysis_courage_05052021.tbl")
 sumstat_snpid <- left_join(sumstat, hrc_data); rm(sumstat)
 sumstat_snpid  <- sumstat_snpid %>% rename(P = `P-value`)
