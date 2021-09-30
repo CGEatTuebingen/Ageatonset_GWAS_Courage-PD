@@ -1,5 +1,5 @@
-## Generate Locuszoom input file
-### Filter chromosome 4 SNPs
+# Generate Locuszoom input file
+## A. Filter chromosome 4 SNPs
 metanalysis_courage_chr4 <-
   fread("meta_analysis_courage_05052021.tbl") %>% separate(MarkerName, into = c("CHR", "POS"), sep = ":") %>% filter(HetDf >
                                                                                                                       18) %>% filter(HetISq < 50) %>% rename(
@@ -11,7 +11,7 @@ metanalysis_courage_chr4 <-
                                                                                                                       ) %>% mutate(CHR = as.numeric(CHR)) %>% filter(CHR == "4")
 
 
-### Filter SNPs on 2kb on either side of the specific loci e.g. BST1 loci and create output file specific to locuszoom 
+## B. Filter SNPs on 2kb on either side of the specific loci e.g. BST1 loci and create output file specific to locuszoom 
 metanalysis_consortium_chr4_2kb_BST1 <-
   metanalysis_consortium_chr4 %>% mutate(POS = as.numeric(POS)) %>%
   filter(POS %in% c(15537348:15937348)) %>% mutate(SNP = paste(CHR, POS, sep =
@@ -30,7 +30,7 @@ metanalysis_consortium_chr4_2kb_BST1  %>%  select(c(SNP, "P-value")) %>%  rename
     quote = FALSE
   )
 
-## Header of the input file for locuszoom plot                                                                                                                      ) %>% mutate(CHR = as.numeric(CHR)) %>% filter(CHR == "4")
+### Header of the input file for locuszoom plot                                                                                                                      ) %>% mutate(CHR = as.numeric(CHR)) %>% filter(CHR == "4")
 # MarkerName	P.value
 # chr4:15840444	0.05687
 # chr4:15697925	0.2247
@@ -49,7 +49,7 @@ metanalysis_consortium_chr4_2kb_BST1  %>%  select(c(SNP, "P-value")) %>%  rename
 # chr4:15837382	0.6321
 
 
-### Go to http://locuszoom.org/genform.php?type=yourdata
+## C. Go to http://locuszoom.org/genform.php?type=yourdata and upload your data to generate plots
 # Upload txt file to Path to your file
 # Give the name of SNP of interest e.g. chr4:15737348 in the section specific region to display along with a flanking size of 200kb
 # Click on plot data 
