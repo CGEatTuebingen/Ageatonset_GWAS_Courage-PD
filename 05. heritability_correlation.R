@@ -7,7 +7,7 @@ library(tidyverse)
 ## B. Load the input meta-analysis file and format it for LDSC; On terminal/ Windows using R
 dataset_A <-
   fread("cosortium_sumstat_A.tbl")
-# e.g of meta-analysis file - "meta_analysis_courage_05052021.tbl" (See 04. Linear regression.R)
+### e.g of meta-analysis file - "meta_analysis_courage_05052021.tbl" (See 04. Linear regression.R)
 head(dataset_A)
 # Classes 'data.table' and 'data.frame':  20473650 obs. of  15 variables:
 #   $ MarkerName: chr  "5:85928892" "14:36082010" "11:107819621" "21:41565796" ...
@@ -37,8 +37,8 @@ consortiumA_sumstat_annotated <-
               row.names = F,
               quote = FALSE)
 
-# head of ldsc input file
-# head(fread("consortiumA_sumstat_ldsc_input.txt"))
+### head of ldsc input file
+head(fread("consortiumA_sumstat_ldsc_input.txt"))
 # SNP Allele1 Allele2 P.value  Effect StdErr
 # 1: rs113534962       T       C  0.5727  0.1941 0.3442
 # 2: rs559397866       T       C  0.0812 -1.7573 1.0077
@@ -47,7 +47,7 @@ consortiumA_sumstat_annotated <-
 # 5:  rs62099898       T       C  0.4961 -0.1264 0.1857
 # 6:  rs11725240       T       C  0.1402  0.3328 0.2256
 
-# Similarly generate ldsc input for other consortium using metal ouput from COURAGE PD GWAS or IPDGC AAO GWAS
+### Similarly generate ldsc input for other consortium using metal ouput from COURAGE PD GWAS or IPDGC AAO GWAS
 
 ## C. Generate h2 for different datasets; On terminal; Tool: LDSC; N: Sample size
 munge_sumstats.py--sumstats consortiumA_sumstat_ldsc_input.txt--N XXXX--merge -
@@ -61,7 +61,7 @@ munge_sumstats.py--sumstats consortiumB_sumstat_ldsc_input.txt--N YYYY--merge -
 ldsc.py--h2 consortiumB_sumstat_ldsc_input.sumstats.gz--ref - ld - chr eur_w_ld_chr / --w -
   ld - chr eur_w_ld_chr / --out consortiumB_sumstat_h2
 
-# Sample output from consortiumA_sumstat_h2.log file
+### Sample output from consortiumA_sumstat_h2.log file
 # Reading summary statistics from consortiumA_sumstat_ldsc_input.sumstats.gz ...
 # Read summary statistics for 1061219 SNPs.
 # Reading reference panel LD Score from eur_w_ld_chr/[1-22] ... (ldscore_fromlist)
@@ -82,7 +82,7 @@ ldsc.py--h2 consortiumB_sumstat_ldsc_input.sumstats.gz--ref - ld - chr eur_w_ld_
 ldsc.py--rg consortiumA_sumstat_ldsc_input.sumstats.gz, consortiumB_sumstat_ldsc_input.sumstats.gz--ref -
   ld - chr eur_w_ld_chr / --w - ld - chr eur_w_ld_chr / --out  correaltion_bip
 
-# Sample output of correlation between different datasets
+### Sample output of correlation between different datasets
 # Genetic Covariance
 # ------------------
 # Total Observed scale gencov: -0.0674 (0.0332)
