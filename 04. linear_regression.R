@@ -153,7 +153,7 @@ head(sumstat)
 # $ HetPVal   : num  0.138 0.2 0.523 1 0.632 ...
 # - attr(*, ".internal.selfref")=<externalptr>
 
-### Annotate the output file 
+## G. Annotate the output file 
 hrc_data <- fread("hrc_annotations.txt")
 # hrc_annotations.txt was obtained from HRC which contains SNP rsids and corresponding positions
 hrc_data <- hrc_data %>% select(MarkerName, SNP)
@@ -172,7 +172,7 @@ rm(sumstat)
 sumstat_snpid   <-
   sumstat_snpid  %>% separate("MarkerName", c("CHR", "BP"), ":")
 
-### Remove bad quality SNP to get the annotated and cleaned meta-analysis output file
+## H. Remove bad quality SNP to get the annotated and cleaned meta-analysis output file
 courage_aao_sumdata <-
   sumstat_snpid %>% filter(HetDf > 18 &
                              HetISq <= 50) %>%  rename(
