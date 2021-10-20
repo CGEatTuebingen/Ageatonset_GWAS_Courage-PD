@@ -46,6 +46,7 @@ for (i in 1:length(uniq)){
 
 ## C.  Run for each chromosome on Plink platform
 plink --bfile ./HRC_ld/chr5 --clump clump_input19df_mychr_5_courage_all.txt --clump-field P --clump-kb 250 --clump-p1 1 --clump-r2 0.1 --clump-snp-field SNP --memory 120000 --out chr1_clump_courage19df_all 
+# HRC_ld folder contains chromosomal data chromosomewide (bed, bim and fam files) for all the HRC SNPs in the HRC dataset
 
 ## D. Merge all the chromosome specific output files on R platform
 masterlist =list.files(pattern = "19df_all\\.clumped$")
